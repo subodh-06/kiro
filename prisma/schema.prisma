@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id             String    @id @default(cuid())
+  clerkUserId    String    @unique
+  email          String    @unique
+  name           String?
+  imageUrl       String?   //
+  createdIssues  Issue[]   @relation("Reporter")
+  assignedIssues Issue[]   @relation("Assignee")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  notifications Notification[]
+}
+
+model Project {
+  id             String   @id @default(cuid())
+  name           String
+  key            String
+  description    String?
+  organizationId String   //
+  sprints        Sprint[]
+  issues         Issue[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  adminIds       String[]
+  
+  @@unique([organizationId, key]) //
+  @@index([organizationId]) // Optimization: Faster organization dashboard loading
+}
+
+model Sprint {
+  id        String       @id @default(cuid())
+  name      String       // Removed global @unique
+  startDate DateTime
+  endDate   DateTime
+  status    SprintStatus @default(PLANNED)
+  project   Project      @relation(fields: [projectId], references: [id], onDelete: Cascade) //
+  projectId String
+  issues    Issue[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@unique([projectId, name]) // Optimization: Scoped uniqueness
+  @@index([projectId])        // Optimization: Fast sprint lookups per project
+}
+
+model Issue {
+  id          String        @id @default(cuid())
+  title       String
+  description String?
+  status      IssueStatus   //
+  order       Int
+  priority    IssuePriority
+  assignee    User?         @relation("Assignee", fields: [assigneeId], references: [id]) //
+  assigneeId  String?
+  reporter    User          @relation("Reporter", fields: [reporterId], references: [id])
+  reporterId  String
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  sprint      Sprint?       @relation(fields: [sprintId], references: [id], onDelete: SetNull) //
+  sprintId    String?
+  dueDate     DateTime?     // 🚀 NEW: Added Due Date field
+  createdAt   DateTime      @default(now()) //
+  updatedAt   DateTime      @updatedAt
+
+  // Optimization: Composite indexes perfectly matching board queries
+  @@index([projectId, status, order]) 
+  @@index([sprintId, status, order])
+  @@index([assigneeId]) // Optimization: Fast "My Issues" dashboard lookups
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   // The user receiving the notification
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  link      String?  // The URL to redirect to when clicked
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+enum SprintStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+}
+
+enum IssueStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+}
+
+enum IssuePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
