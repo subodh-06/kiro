@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { getUserIssues } from "@/actions/issues";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import IssueCard from "@/components/issue-card";
-import type { Prisma } from "@/lib/generated/prisma/client"; // Kept your custom Prisma path
+import type { Prisma } from "@prisma/client"; // Kept your custom Prisma path
 import { ListTodo } from "lucide-react";
 
 /* ---------------- TYPES ---------------- */
