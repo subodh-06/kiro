@@ -1,6 +1,6 @@
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import type { Prisma } from "@/lib/generated/prisma/client";
+import type { Prisma } from "@prisma/client";
 
 /* ---------------- TYPES ---------------- */
 
