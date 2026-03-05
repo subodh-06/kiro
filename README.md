@@ -1,7 +1,7 @@
 
 # Kiro 🚀
 
-**The "Zero-Learning-Curve" Project Management Tool.** *Built internally at [Influcraft](https://innovkraft.com) to replace Jira.*
+**The "Zero-Learning-Curve" Project Management Tool.** *Built internally at [Influcraft](https://influcraft.com) to replace Jira.*
 
 ---
 
